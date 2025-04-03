@@ -41,7 +41,7 @@ pipeline {
                     git checkout -B main origin/main
                     git add checksum/Dockerfile.checksum
                     git commit -m "Add Dockerfile checksum"
-                    git push https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/Shatest.git main
+                    git push https://github.com/SasidharPV/Shatest.git main
                     '''
                 }
                 }
