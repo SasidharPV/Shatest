@@ -1,0 +1,14 @@
+# Use a lightweight base image
+FROM alpine:latest
+
+# Install necessary tools
+RUN apk add --no-cache bash openssl
+
+# Copy the script to generate checksum
+COPY generate_checksum.sh /usr/local/bin/generate_checksum.sh
+
+# Make the script executable
+RUN chmod +x /usr/local/bin/generate_checksum.sh
+
+# Set the default command to run the checksum script
+CMD ["generate_checksum.sh"]
