@@ -33,6 +33,7 @@ pipeline {
         stage('Commit Checksum to GitHub') {
             steps {
                 script {
+                withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     bat '''
                     git config user.name "Jenkins"
                     git config user.email "jenkins@example.com"
@@ -40,8 +41,9 @@ pipeline {
                     git checkout -B main origin/main
                     git add checksum/Dockerfile.checksum
                     git commit -m "Add Dockerfile checksum"
-                    git push origin main
+                    git push https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/Shatest.git main
                     '''
+                }
                 }
             }
         }
