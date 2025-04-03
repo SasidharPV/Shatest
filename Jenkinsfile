@@ -23,6 +23,43 @@ pipeline {
                 }
             }
         }
+        stage('Generate Dockerfile Checksum') {
+            steps {
+                script {
+                    bat 'certutil -hashfile Dockerfile SHA256 > checksum/Dockerfile.checksum'
+                }
+            }
+        }
+        stage('Commit Checksum to GitHub') {
+            steps {
+                script {
+                    bat '''
+                    git config user.name "Jenkins"
+                    git config user.email "jenkins@example.com"
+                    git status
+                    git add checksum/Dockerfile.checksum
+                    git commit -m "Add Dockerfile checksum"
+                    git push origin main
+                    '''
+                }
+            }
+        }
+        stage('Verify Checksum') {
+            steps {
+                script {
+                    bat '''
+                    certutil -hashfile Dockerfile SHA256 > checksum/temp.checksum
+                    fc checksum/Dockerfile.checksum checksum/temp.checksum > nul
+                    if errorlevel 1 (
+                        echo "Checksum verification failed!"
+                        exit 1
+                    ) else (
+                        echo "Checksum verification passed."
+                    )
+                    '''
+                }
+            }
+        }
         stage('Push Docker Image') {
             steps {
                 script {
@@ -40,27 +77,6 @@ pipeline {
                     docker stop sample-app-container || exit 0
                     docker rm sample-app-container || exit 0
                     docker run -d -p 3000:3000 --name sample-app-container venkatasasidhar/shatest
-                    '''                
-                    }
-            }
-        }
-        stage('Generate Dockerfile Checksum') {
-            steps {
-                script {
-                    bat 'certutil -hashfile Dockerfile SHA256 > Dockerfile.checksum'
-                }
-            }
-        }
-        stage('Commit Checksum to GitHub') {
-            steps {
-                script {
-                    bat '''
-                    git config user.name "Jenkins"
-                    git config user.email "jenkins@example.com"
-                    git checkout main
-                    git add Dockerfile.checksum
-                    git commit -m "Add Dockerfile checksum"
-                    git push origin main
                     '''
                 }
             }
