@@ -36,8 +36,12 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    bat 'docker run -d -p 6301:6301 --name sample-app-container venkatasasidhar/shatest'
-                }
+                    bat '''
+                    docker stop sample-app-container || exit 0
+                    docker rm sample-app-container || exit 0
+                    docker run -d -p 3000:3000 --name sample-app-container venkatasasidhar/shatest
+                    '''                
+                    }
             }
         }
         stage('Generate Dockerfile Checksum') {
