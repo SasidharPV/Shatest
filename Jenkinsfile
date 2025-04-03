@@ -30,6 +30,17 @@ pipeline {
                 }
             }
         }
+        stage('Generate Dockerfile Checksum') {
+            steps {
+                script {
+                    bat '''
+                    mkdir checksum || exit 0
+                    certutil -hashfile Dockerfile SHA256 > checksum/Dockerfile.checksum
+                    dir checksum
+                    '''
+                }
+            }
+        }
         stage('Commit Checksum to ChecksumSafe Repo') {
             steps {
                 script {
