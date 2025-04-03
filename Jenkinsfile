@@ -19,14 +19,24 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t sample-app .'
+                    bat 'docker build -t venkatasasidhar/shatest .'
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                        bat 'docker push venkatasasidhar/shatest'
+                    }
                 }
             }
         }
         stage('Run Docker Container') {
             steps {
                 script {
-                    bat 'docker run -d -p 3000:3000 --name sample-app-container sample-app'
+                    bat 'docker run -d -p 3000:3000 --name sample-app-container venkatasasidhar/shatest'
                 }
             }
         }
@@ -55,7 +65,7 @@ pipeline {
                 script {
                     bat 'docker stop sample-app-container || exit 0'
                     bat 'docker rm sample-app-container || exit 0'
-                    bat 'docker rmi sample-app || exit 0'
+                    bat 'docker rmi venkatasasidhar/shatest || exit 0'
                 }
             }
         }
