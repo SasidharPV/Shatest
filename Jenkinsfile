@@ -26,13 +26,6 @@ pipeline {
         stage('Generate Dockerfile Checksum') {
             steps {
                 script {
-                    bat 'certutil -hashfile Dockerfile SHA256 > checksum/Dockerfile.checksum'
-                }
-            }
-        }
-        stage('Generate Dockerfile Checksum2') {
-            steps {
-                script {
                     bat '''
                     mkdir checksum || exit 0
                     certutil -hashfile Dockerfile SHA256 > checksum/Dockerfile.checksum
@@ -41,50 +34,28 @@ pipeline {
                 }
             }
         }
-        stage('Commit Checksum to ChecksumSafe Repo') {
+        stage('Verify Checksum with ChecksumSafe Repo') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                         bat '''
                         REM Clone the checksumsafe repository
-                        git clone https://%GIT_USER%:%GIT_PASS%github.com/SasidharPV/checksumsafe.git checksum-repo
+                        git clone https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/checksumsafe.git checksum-repo
 
-                        REM Copy the checksum file to the cloned repository
-                        copy checksum\\Dockerfile.checksum checksum-repo\\Dockerfile.checksum
-
-                        REM Navigate to the cloned repository
-                        cd checksum-repo
-
-                        REM Configure Git user details
-                        git config user.name "sasidharpv"
-                        git config user.email "pendyalasasidhar@outlook.com"
-
-                        REM Commit and push the checksum file
-                        git add Dockerfile.checksum
-                        git commit -m "Add Dockerfile checksum"
-                        git push https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/checksumsafe.git main
+                        REM Compare the locally generated checksum with the one in the repository
+                        if not exist checksum-repo\\Dockerfile.checksum (
+                            echo "Checksum file not found in checksumsafe repository!"
+                            exit 1
+                        )
+                        fc checksum\\Dockerfile.checksum checksum-repo\\Dockerfile.checksum > nul
+                        if errorlevel 1 (
+                            echo "Checksum verification failed!"
+                            exit 1
+                        ) else (
+                            echo "Checksum verification passed."
+                        )
                         '''
                     }
-                }
-            }
-        }
-        stage('Verify Checksum') {
-            steps {
-                script {
-                    bat '''
-                    certutil -hashfile Dockerfile SHA256 > checksum/temp.checksum
-                    if not exist checksum\\Dockerfile.checksum (
-                        echo "Checksum file not found!"
-                        exit 1
-                    )
-                    fc checksum\\Dockerfile.checksum checksum\\temp.checksum > nul
-                    if errorlevel 1 (
-                        echo "Checksum verification failed!"
-                        exit 1
-                    ) else (
-                        echo "Checksum verification passed."
-                    )
-                    '''
                 }
             }
         }
@@ -106,6 +77,33 @@ pipeline {
                     docker rm sample-app-container || exit 0
                     docker run -d -p 3000:3000 --name sample-app-container venkatasasidhar/shatest
                     '''
+                }
+            }
+        }
+        stage('Update Checksum in ChecksumSafe Repo') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        bat '''
+                        REM Clone the checksumsafe repository
+                        git clone https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/checksumsafe.git checksum-repo
+
+                        REM Copy the latest checksum file to the cloned repository
+                        copy checksum\\Dockerfile.checksum checksum-repo\\Dockerfile.checksum
+
+                        REM Navigate to the cloned repository
+                        cd checksum-repo
+
+                        REM Configure Git user details
+                        git config user.name "sasidharpv"
+                        git config user.email "pendyalasasidhar@outlook.com"
+
+                        REM Commit and push the updated checksum file
+                        git add Dockerfile.checksum
+                        git commit -m "Update Dockerfile checksum after deployment"
+                        git push https://%GIT_USER%:%GIT_PASS%@github.com/SasidharPV/checksumsafe.git main
+                        '''
+                    }
                 }
             }
         }
