@@ -73,7 +73,11 @@ pipeline {
                 script {
                     bat '''
                     certutil -hashfile Dockerfile SHA256 > checksum/temp.checksum
-                    fc checksum/Dockerfile.checksum checksum/temp.checksum > nul
+                    if not exist checksum\\Dockerfile.checksum (
+                        echo "Checksum file not found!"
+                        exit 1
+                    )
+                    fc checksum\\Dockerfile.checksum checksum\\temp.checksum > nul
                     if errorlevel 1 (
                         echo "Checksum verification failed!"
                         exit 1
