@@ -35,8 +35,8 @@ pipeline {
                 script {
                 withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                     bat '''
-                    git config user.name "Jenkins"
-                    git config user.email "jenkins@example.com"
+                    git config user.name "sasidharpv"
+                    git config user.email "pendyalasasidhar@outlook.com"
                     git fetch origin
                     git checkout -B main origin/main
                     git add checksum/Dockerfile.checksum
