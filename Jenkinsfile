@@ -57,6 +57,7 @@ pipeline {
                     bat '''
                     git config user.name "Jenkins"
                     git config user.email "jenkins@example.com"
+                    git checkout main
                     git add Dockerfile.checksum
                     git commit -m "Add Dockerfile checksum"
                     git push origin main
