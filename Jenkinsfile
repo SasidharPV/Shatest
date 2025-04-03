@@ -51,7 +51,7 @@ pipeline {
                         REM Commit and push the checksum file
                         git add Dockerfile.checksum
                         git commit -m "Add Dockerfile checksum"
-                        git push origin main
+                        git push 
                         '''
                     }
                 }
