@@ -30,20 +30,30 @@ pipeline {
                 }
             }
         }
-        stage('Commit Checksum to GitHub') {
+        stage('Commit Checksum to ChecksumSafe Repo') {
             steps {
                 script {
-                withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                    bat '''
-                    git config user.name "sasidharpv"
-                    git config user.email "pendyalasasidhar@outlook.com"
-                    git fetch origin
-                    git checkout -B main origin/main
-                    git add checksum/Dockerfile.checksum
-                    git commit -m "Add Dockerfile checksum"
-                    git push https://github.com/SasidharPV/Shatest.git main
-                    '''
-                }
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        bat '''
+                        REM Clone the checksumsafe repository
+                        git clone https://github.com/SasidharPV/checksumsafe.git checksum-repo
+
+                        REM Copy the checksum file to the cloned repository
+                        copy checksum\\Dockerfile.checksum checksum-repo\\Dockerfile.checksum
+
+                        REM Navigate to the cloned repository
+                        cd checksum-repo
+
+                        REM Configure Git user details
+                        git config user.name "sasidharpv"
+                        git config user.email "pendyalasasidhar@outlook.com"
+
+                        REM Commit and push the checksum file
+                        git add Dockerfile.checksum
+                        git commit -m "Add Dockerfile checksum"
+                        git push origin main
+                        '''
+                    }
                 }
             }
         }
