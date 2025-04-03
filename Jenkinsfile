@@ -36,7 +36,7 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    bat 'docker run -d -p 3000:3000 --name sample-app-container venkatasasidhar/shatest'
+                    bat 'docker run -d -p 6301:6301 --name sample-app-container venkatasasidhar/shatest'
                 }
             }
         }
