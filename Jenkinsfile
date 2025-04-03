@@ -36,7 +36,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'github-credentials-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
                         bat '''
                         REM Clone the checksumsafe repository
-                        git clone https://github.com/SasidharPV/checksumsafe.git checksum-repo
+                        git clone https://%GIT_USER%:%GIT_PASS%github.com/SasidharPV/checksumsafe.git checksum-repo
 
                         REM Copy the checksum file to the cloned repository
                         copy checksum\\Dockerfile.checksum checksum-repo\\Dockerfile.checksum
@@ -51,7 +51,7 @@ pipeline {
                         REM Commit and push the checksum file
                         git add Dockerfile.checksum
                         git commit -m "Add Dockerfile checksum"
-                        git push 
+                        git push https://%GIT_USER%:%GIT_PASS%github.com/SasidharPV/checksumsafe.git main
                         '''
                     }
                 }
